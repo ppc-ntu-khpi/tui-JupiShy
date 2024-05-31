@@ -3,13 +3,77 @@
 ![](terminal-icon.png)
 ![](gui-icon.png)
 
-Це одна з робіт, які доповнюють основний цикл лабораторних робіт #1-8 (проект **Banking**, [Netbeans](https://netbeans.org/)) з ООП.  Основна мета цих додаткових вправ - познайомитись з різними видами інтерфейсів користувача та засобами їх створення. Згадувані 'базові' роботи розміщено в [окремому репозиторії](https://github.com/liketaurus/OOP-JAVA) (якщо будете робити завдання на "4" або "5" раджу переглянути [діаграму класів](https://github.com/liketaurus/OOP-JAVA/blob/master/MyBank.png), аби розуміти які методи є у класів).
+## Змінений клас ShowCustomerDetails
 
-В ході першої роботи вам пропонується виконати **наступне завдання** - [Робота 1: TUI з Jexer](https://github.com/ppc-ntu-khpi/TUI-Lab1-Starter/blob/master/Lab%201%20-TUI/Lab%201.md)
-  
-**Додаткове завдання** (для тих хто зробив все і прагне більшого): [дивіться тут](https://github.com/ppc-ntu-khpi/TUI-Lab1-Starter/blob/master/Lab%201%20-TUI/Lab%201%20-%20add.md)
+```java
+private void ShowCustomerDetails() {
+        
+        try (BufferedReader br = new BufferedReader(new FileReader("test.dat"))) {
+            int numberOfCustomers = Integer.parseInt(br.readLine());
+            for (int i = 0; i < numberOfCustomers; i++) {
+                br.readLine();
+                String[] customerInfo = br.readLine().split("\t");
 
-Всі необхідні бібліотеки містяться у теці [jars](https://github.com/ppc-ntu-khpi/TUI-Lab1-Starter/tree/master/jars). В тому числі - всі необхідні відкомпільовані класи з робіт 1-8 - файл [MyBank.jar](https://github.com/ppc-ntu-khpi/TUI-Lab1-Starter/blob/master/jars/MyBank.jar). Файл даних лежить у теці [data](https://github.com/ppc-ntu-khpi/TUI-Lab1-Starter/tree/master/data).
+                Bank.addCustomer(customerInfo[0], customerInfo[1]);
+                
+                int numberOfAccounts = Integer.parseInt(customerInfo[2]);
+                
+                Customer customer = Bank.getCustomer(i);
+
+                for (int j = 0; j < numberOfAccounts; j++) {
+                    String[] accountInfo = br.readLine().split("\t");
+                    String accountType = accountInfo[0];
+                    double balance = Double.parseDouble(accountInfo[1]);
+                    switch (accountType) {
+                        case "S":
+                            double interestRate = Double.parseDouble(accountInfo[2]);
+                            customer.addAccount(new SavingsAccount(balance, interestRate));
+                            break;
+                        case "C":
+                            double overdraftAmount = Double.parseDouble(accountInfo[2]);
+                            customer.addAccount(new CheckingAccount(balance, overdraftAmount));
+                            break;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        
+        
+        TWindow custWin = addWindow("Customer Window", 2, 1, 40, 10, TWindow.NOZOOMBOX);
+        custWin.newStatusBar("Enter valid customer number and press Show...");
+
+        custWin.addLabel("Enter customer number: ", 2, 2);
+        TField custNo = custWin.addField(24, 2, 3, false);
+        TText details = custWin.addText("Owner Name: \nAccount Type: \nAccount Balance: ", 2, 4, 38, 8);
+        custWin.addButton("&Show", 28, 2, new TAction() {
+            @Override
+            public void DO() {
+                try {
+                    int custNum = Integer.parseInt(custNo.getText());
+                    Customer customer = Bank.getCustomer(custNum);
+                    Account account = customer.getAccount(0);
+                    //details about customer with index==custNum
+                    details.setText("Owner Name: "+customer.getFirstName()+" (id="+custNum+")\nAccount Type: '"+account+"'\nAccount Balance: "+account.getBalance());
+                } catch (Exception e) {
+                    messageBox("Error", "You must provide a valid customer number!").show();
+                }
+            }
+        });
+    }
+```
+
+![](photos/Capture1.PNG)
+
+## Приклад читання з файлу
+
+![](photos/Capture2.png)
+
+![](photos/Capture3.png)
+
+Я не розібралася як нормально можна вивести тип акаунта, тому виводиться як виводиться...
 
 ---
 **УВАГА! Не забуваємо здавати завдання через Google Classroom та вказувати посилання на створений для вас репозиторій!**
