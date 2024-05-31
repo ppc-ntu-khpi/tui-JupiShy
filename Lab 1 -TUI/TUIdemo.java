@@ -1,4 +1,4 @@
-package com.mybank.tui;
+//package com.mybank.tui;
 
 import jexer.TAction;
 import jexer.TApplication;
@@ -7,6 +7,14 @@ import jexer.TText;
 import jexer.TWindow;
 import jexer.event.TMenuEvent;
 import jexer.menu.TMenu;
+import com.mybank.domain.Account;
+import com.mybank.domain.Bank;
+import com.mybank.domain.Customer;
+import com.mybank.domain.SavingsAccount;
+import com.mybank.domain.CheckingAccount;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  *
@@ -60,6 +68,41 @@ public class TUIdemo extends TApplication {
     }
 
     private void ShowCustomerDetails() {
+        
+        try (BufferedReader br = new BufferedReader(new FileReader("test.dat"))) {
+            int numberOfCustomers = Integer.parseInt(br.readLine());
+            for (int i = 0; i < numberOfCustomers; i++) {
+                br.readLine();
+                String[] customerInfo = br.readLine().split("\t");
+
+                Bank.addCustomer(customerInfo[0], customerInfo[1]);
+                
+                int numberOfAccounts = Integer.parseInt(customerInfo[2]);
+                
+                Customer customer = Bank.getCustomer(i);
+
+                for (int j = 0; j < numberOfAccounts; j++) {
+                    String[] accountInfo = br.readLine().split("\t");
+                    String accountType = accountInfo[0];
+                    double balance = Double.parseDouble(accountInfo[1]);
+                    switch (accountType) {
+                        case "S":
+                            double interestRate = Double.parseDouble(accountInfo[2]);
+                            customer.addAccount(new SavingsAccount(balance, interestRate));
+                            break;
+                        case "C":
+                            double overdraftAmount = Double.parseDouble(accountInfo[2]);
+                            customer.addAccount(new CheckingAccount(balance, overdraftAmount));
+                            break;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        
+        
         TWindow custWin = addWindow("Customer Window", 2, 1, 40, 10, TWindow.NOZOOMBOX);
         custWin.newStatusBar("Enter valid customer number and press Show...");
 
@@ -71,8 +114,10 @@ public class TUIdemo extends TApplication {
             public void DO() {
                 try {
                     int custNum = Integer.parseInt(custNo.getText());
+                    Customer customer = Bank.getCustomer(custNum);
+                    Account account = customer.getAccount(0);
                     //details about customer with index==custNum
-                    details.setText("Owner Name: John Doe (id="+custNum+")\nAccount Type: 'Checking'\nAccount Balance: $200.00");
+                    details.setText("Owner Name: "+customer.getFirstName()+" (id="+custNum+")\nAccount Type: '"+account+"'\nAccount Balance: "+account.getBalance());
                 } catch (Exception e) {
                     messageBox("Error", "You must provide a valid customer number!").show();
                 }
