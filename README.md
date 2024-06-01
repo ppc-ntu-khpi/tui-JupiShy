@@ -3,7 +3,7 @@
 ![](terminal-icon.png)
 ![](gui-icon.png)
 
-## Змінений клас ShowCustomerDetails
+## Змінений клас ShowCustomerDetails (Завдання на 5)
 
 ```java
 private void ShowCustomerDetails() {
